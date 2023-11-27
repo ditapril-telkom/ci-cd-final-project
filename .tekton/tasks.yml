@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-to-openshift
+spec:
+  params:
+    - name: app-name
+      type: string
+    - name: build-image
+      type: string
+  steps:
+    - name: install-oc
+      image: python:3.9-slim
+      script: |
+        set -e
+        apt-get update && apt-get install -y openshift-client
+
+    - name: oc-create-deployment
+      image: python:3.9-slim
+      script: |
+        set -e
+        oc create deployment $(params.app-name) --image=$(params.build-image) --dry-run=client -o yaml | oc apply -f -
